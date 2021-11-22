@@ -38,26 +38,26 @@ pumping_losses = Node("Pumping")
 magnets = Node("Magnets")
 
 
-def make_graph(prms=[50, 0.18, 1.2, 0.25]):
+def make_graph(prms=[50, 0.18, 1.2, 0.25, 0.9, 0.9, 0.9]):
     # Q_plasma = 50
     Q_plasma = prms[0]
 
     # heating_power = 0.18
     heating_power = prms[1]
-    heating_efficiency = 0.9
+    heating_efficiency = prms[6]
     fusion_power_value = heating_power*float(Q_plasma)
-    neutrons_to_alpha_ratio = 2/0.5
+    neutrons_to_alpha_ratio = 14.1/3.5
     neutrons_power_from_plasma = 1/(1 + 1/neutrons_to_alpha_ratio)*(fusion_power_value+ heating_power)
     alphas_power = 1/(1 + neutrons_to_alpha_ratio)*(fusion_power_value + heating_power)
 
     neutron_multiplication_factor = prms[2]
     neutrons_power = neutrons_power_from_plasma
 
-    neutrons_in_blanket_ratio = 0.9
-    neutrons_in_div_ratio = 0.1
+    neutrons_in_blanket_ratio = prms[5]
+    neutrons_in_div_ratio = 1 - neutrons_in_blanket_ratio
 
-    alpha_in_fw_ratio = 0.9
-    alpha_in_div_ratio = 0.1
+    alpha_in_fw_ratio = prms[4]
+    alpha_in_div_ratio = 1 - alpha_in_fw_ratio
 
     fw_to_blanket_efficiency = 1
 
@@ -147,6 +147,9 @@ Q_layout = html.Div([
     html.Div("Heating power"), dcc.Input(id='heating box', type='text', value="1"),
     html.Div("Energy multiplication"), dcc.Input(id='neutron mult box', type='text', value="1.2"),
     html.Div("Electricity generation efficiency"), dcc.Input(id='generator efficiency box', type='text', value="0.25"),
+    html.Div("Alphas FW/div ratio"), dcc.Input(id='alphas FW/div ratio', type='text', value="0.9"),
+    html.Div("Neutrons blanket/div ratio"), dcc.Input(id='neutrons BB/div ratio', type='text', value="0.9"),
+    html.Div("Heating efficiency"), dcc.Input(id='heating efficiency', type='text', value="0.9"),
     html.Button('Submit', id='submit-val'),
     ]
 )
@@ -163,13 +166,19 @@ app.layout = layout
     dash.State('heating box', 'value'),
     dash.State('neutron mult box', 'value'),
     dash.State('generator efficiency box', 'value'),
+    dash.State('alphas FW/div ratio', 'value'),
+    dash.State('neutrons BB/div ratio', 'value'),
+    dash.State('heating efficiency', 'value'),
 )
-def update_graph(n_clicks, Q, heating, neutron_mult, elec_gen_efficiency):
+def update_graph(n_clicks, Q, heating, neutron_mult, elec_gen_efficiency, alpha_FW_to_div, neut_BB_to_div, heating_eff):
     prms = [
         float(Q),
         float(heating),
         float(neutron_mult),
-        float(elec_gen_efficiency)
+        float(elec_gen_efficiency),
+        float(alpha_FW_to_div),
+        float(neut_BB_to_div),
+        float(heating_eff),
     ]
     return make_graph(prms)
 
