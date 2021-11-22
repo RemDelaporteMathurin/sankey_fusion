@@ -44,7 +44,7 @@ pumping_losses = Node("Pumping")
 magnets = Node("Magnets")
 
 
-def make_graph(prms=[50, 0.18, 14.1/3.5, 1.2, 0.25, 0.9, 0.9, 0.9]):
+def make_graph(prms=[50, 1, 14.1/3.5, 1.2, 0.25, 0.9, 0.9, 0.9]):
     Q_plasma = prms[0]
 
     heating_power = prms[1]
