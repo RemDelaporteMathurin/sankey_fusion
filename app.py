@@ -108,6 +108,7 @@ def make_graph(prms=[50, 0.18, 1.2, 0.25, 0.9, 0.9, 0.9]):
     ]
 
     fig = go.Figure(go.Sankey(
+        valuesuffix="MW",
         # arrangement="snap",
         node={
             "label": [node.name for node in nodes],
@@ -138,7 +139,7 @@ graph1 = dcc.Graph(
 
 Q_layout = html.Div([
     html.Div("Q_plasma"), dcc.Input(id='Q box', type='text', value="50"),
-    html.Div("Heating power"), dcc.Input(id='heating box', type='text', value="1"),
+    html.Div("Heating power (MW)"), dcc.Input(id='heating box', type='text', value="1"),
     html.Div("Energy multiplication"), dcc.Input(id='neutron mult box', type='text', value="1.2"),
     html.Div("Electricity generation efficiency"), dcc.Input(id='generator efficiency box', type='text', value="0.25"),
     html.Div("Alphas FW/div ratio"), dcc.Input(id='alphas FW/div ratio', type='text', value="0.9"),
