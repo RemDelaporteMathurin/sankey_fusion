@@ -1,6 +1,12 @@
 import plotly.graph_objects as go
 from plotly.colors import DEFAULT_PLOTLY_COLORS
 
+import dash
+from dash import dcc
+from dash import html
+import dash_bootstrap_components as dbc
+
+
 class Node:
     def __init__(self, name, color="black"):
         self.name = name
@@ -39,10 +45,8 @@ magnets = Node("Magnets")
 
 
 def make_graph(prms=[50, 0.18, 1.2, 0.25, 0.9, 0.9, 0.9]):
-    # Q_plasma = 50
     Q_plasma = prms[0]
 
-    # heating_power = 0.18
     heating_power = prms[1]
     heating_efficiency = prms[6]
     fusion_power_value = heating_power*float(Q_plasma)
@@ -72,7 +76,6 @@ def make_graph(prms=[50, 0.18, 1.2, 0.25, 0.9, 0.9, 0.9]):
     elec_to_pumping_value = 0.1*electricity_val
     elec_to_magnets_value = 0.05*electricity_val
     net_electricity = electricity_val - heating_power/heating_efficiency - elec_to_pumping_value - elec_to_magnets_value
-
 
     for i, node in enumerate(nodes):
         node.color = DEFAULT_PLOTLY_COLORS[i%len(DEFAULT_PLOTLY_COLORS)].replace(")", ", 0.8)").replace("rgb", "rgba")
@@ -122,15 +125,6 @@ def make_graph(prms=[50, 0.18, 1.2, 0.25, 0.9, 0.9, 0.9]):
     # fig.show()
     return fig
 
-
-# import plotly.express as px
-
-# fig.write_html("my_reactor_sankey.html")
-
-import dash
-from dash import dcc
-from dash import html
-import dash_bootstrap_components as dbc
 
 app = dash.Dash(__name__)
 
