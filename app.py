@@ -133,6 +133,9 @@ from dash import html
 import dash_bootstrap_components as dbc
 
 app = dash.Dash(__name__)
+
+server = app.server
+
 graph1 = dcc.Graph(
         id='graph1',
         figure=make_graph(),
@@ -172,5 +175,4 @@ def update_graph(n_clicks, Q, heating, neutron_mult, elec_gen_efficiency):
 
 
 if __name__ == "__main__":
-    server = app.server
     app.run_server(debug=True)
