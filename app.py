@@ -84,7 +84,7 @@ def make_graph(prms=[50, 0.18, 1.2, 0.25]):
 
     links = [
         Link(fusion_power, plasma, fusion_power_value),
-        Link(heating_system, heating_losses, heating_power*(1-heating_efficiency)),
+        Link(heating_system, heating_losses, heating_power/heating_efficiency*(1 - heating_efficiency)),
         Link(heating_system, plasma, heating_power),
         Link(plasma, neutrons, neutrons_power_from_plasma),
         Link(plasma, alphas, alphas_power),
