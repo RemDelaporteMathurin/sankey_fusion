@@ -107,7 +107,7 @@ def make_graph(prms=[50, 1, 14.1/3.5, 1.2, 0.25, 0.9, 0.9, 0.9]):
         Link(electricity, heating_system, heating_power/heating_efficiency)
     ]
 
-    fig = go.Figure(go.Sankey(
+    sankey = go.Sankey(
         valuesuffix="MW",
         # arrangement="snap",
         node={
@@ -121,7 +121,8 @@ def make_graph(prms=[50, 1, 14.1/3.5, 1.2, 0.25, 0.9, 0.9, 0.9]):
             "value": [link.value for link in links],
             "color": [link.color for link in links]
             })
-    )
+
+    fig = go.Figure(sankey)
 
     # fig.show()
     return fig
@@ -134,7 +135,6 @@ server = app.server
 graph1 = dcc.Graph(
         id='graph1',
         figure=make_graph(),
-        className="six columns"
     )
 
 Q_layout = html.Div([
