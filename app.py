@@ -146,7 +146,7 @@ Q_layout = html.Div([
     html.Div("Alphas FW/div ratio"), dcc.Input(id='alphas FW/div ratio', type='text', value="0.9"),
     html.Div("Neutrons blanket/div ratio"), dcc.Input(id='neutrons BB/div ratio', type='text', value="0.9"),
     html.Div("Heating efficiency"), dcc.Input(id='heating efficiency', type='text', value="0.9"),
-    html.Button('Submit', id='submit-val'),
+    # html.Button('Submit', id='submit-val'),
     ]
 )
 
@@ -157,17 +157,16 @@ app.layout = layout
 
 @app.callback(
     dash.Output('graph1', 'figure'),
-    dash.Input('submit-val', 'n_clicks'),
-    dash.State('Q box', 'value'),
-    dash.State('heating box', 'value'),
-    dash.State('neutr to alpha ratio', 'value'),
-    dash.State('neutron mult box', 'value'),
-    dash.State('generator efficiency box', 'value'),
-    dash.State('alphas FW/div ratio', 'value'),
-    dash.State('neutrons BB/div ratio', 'value'),
-    dash.State('heating efficiency', 'value'),
+    dash.Input('Q box', 'value'),
+    dash.Input('heating box', 'value'),
+    dash.Input('neutr to alpha ratio', 'value'),
+    dash.Input('neutron mult box', 'value'),
+    dash.Input('generator efficiency box', 'value'),
+    dash.Input('alphas FW/div ratio', 'value'),
+    dash.Input('neutrons BB/div ratio', 'value'),
+    dash.Input('heating efficiency', 'value'),
 )
-def update_graph(n_clicks, Q, heating, neutr_to_alpha, neutron_mult, elec_gen_efficiency, alpha_FW_to_div, neut_BB_to_div, heating_eff):
+def update_graph(Q, heating, neutr_to_alpha, neutron_mult, elec_gen_efficiency, alpha_FW_to_div, neut_BB_to_div, heating_eff):
     prms = [
         float(Q),
         float(heating),
