@@ -48,7 +48,7 @@ def make_graph(prms=[50, 1, 14.1/3.5, 1.2, 0.25, 0.9, 0.9, 0.9]):
     Q_plasma = prms[0]
 
     heating_power = prms[1]
-    heating_efficiency = prms[6]
+    heating_efficiency = prms[7]
     fusion_power_value = heating_power*float(Q_plasma)
     neutrons_to_alpha_ratio = prms[2]
     neutrons_power_from_plasma = 1/(1 + 1/neutrons_to_alpha_ratio)*(fusion_power_value+ heating_power)
