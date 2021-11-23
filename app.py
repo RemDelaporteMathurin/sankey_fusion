@@ -140,8 +140,8 @@ graph1 = dcc.Graph(
 Q_layout = html.Div([
     html.Div("Q_plasma"), dcc.Input(id='Q box', type='text', value="50"),
     html.Div("Heating power (MW)"), dcc.Input(id='heating box', type='text', value="1"),
-    html.Div("neutrons/alphas energy ratio"), dcc.Input(id='neutr to alpha ratio', type='text', value="14.1/3.5"),
-    html.Div("Energy multiplication"), dcc.Input(id='neutron mult box', type='text', value="1.2"),
+    html.Div("E_neutrons/E_alphas"), dcc.Input(id='neutr to alpha ratio', type='text', value="14.1/3.5"),
+    html.Div("Energy multiplication factor"), dcc.Input(id='neutron mult box', type='text', value="1.2"),
     html.Div("Electricity generation efficiency"), dcc.Input(id='generator efficiency box', type='text', value="0.25"),
     html.Div("Alphas FW/div ratio"), dcc.Input(id='alphas FW/div ratio', type='text', value="0.9"),
     html.Div("Neutrons blanket/div ratio"), dcc.Input(id='neutrons BB/div ratio', type='text', value="0.9"),
