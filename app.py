@@ -75,7 +75,9 @@ def make_graph(prms=[50, 1, 4, 1.2, 0.25, 0.9, 0.9, 0.9]):
     elec_gen_losses_value = thermal_energy*(1-elec_gen_efficiency)
     elec_to_pumping_value = 0.1*electricity_val
     elec_to_magnets_value = 0.05*electricity_val
-    net_electricity = electricity_val - heating_power/heating_efficiency - elec_to_pumping_value - elec_to_magnets_value
+    heating_power_gross = heating_power/heating_efficiency
+
+    net_electricity = electricity_val - heating_power_gross - elec_to_pumping_value - elec_to_magnets_value
 
     for i, node in enumerate(nodes):
         node.color = DEFAULT_PLOTLY_COLORS[i%len(DEFAULT_PLOTLY_COLORS)].replace(")", ", 0.8)").replace("rgb", "rgba")
@@ -87,7 +89,7 @@ def make_graph(prms=[50, 1, 4, 1.2, 0.25, 0.9, 0.9, 0.9]):
 
     links = [
         Link(fusion_power, plasma, fusion_power_value),
-        Link(heating_system, heating_losses, heating_power/heating_efficiency*(1 - heating_efficiency)),
+        Link(heating_system, heating_losses, heating_power_gross*(1 - heating_efficiency)),
         Link(heating_system, plasma, heating_power),
         Link(plasma, neutrons, neutrons_power_from_plasma),
         Link(plasma, alphas, alphas_power),
@@ -104,7 +106,7 @@ def make_graph(prms=[50, 1, 4, 1.2, 0.25, 0.9, 0.9, 0.9]):
         Link(electricity, pumping_losses, elec_to_pumping_value),
         Link(electricity, magnets, elec_to_magnets_value),
         Link(electricity, output, net_electricity),
-        Link(electricity, heating_system, heating_power/heating_efficiency)
+        Link(electricity, heating_system, heating_power_gross)
     ]
 
     sankey = go.Sankey(
@@ -145,7 +147,7 @@ Q_layout = html.Div([
     html.Div("Electricity generation efficiency"), dcc.Input(id='generator efficiency box', type='number', value=0.25, min=0, max=1, step=0.01),
     html.Div("Alphas FW/div ratio"), dcc.Input(id='alphas FW/div ratio', type='number', value=0.9, min=0, max=1, step=0.1),
     html.Div("Neutrons blanket/div ratio"), dcc.Input(id='neutrons BB/div ratio', type='number', value=0.9, min=0, max=1, step=0.1),
-    html.Div("Heating efficiency"), dcc.Input(id='heating efficiency', type='number', value=0.9, min=0, max=1, step=0.1),
+    html.Div("Heating efficiency"), dcc.Input(id='heating efficiency', type='number', value=0.9, min=0.1, max=1, step=0.1),
     ]
 )
 
