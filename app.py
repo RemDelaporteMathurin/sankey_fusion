@@ -44,7 +44,7 @@ pumping_losses = Node("Pumping")
 magnets = Node("Magnets")
 
 
-def make_graph(prms=[50, 1, 14.1/3.5, 1.2, 0.25, 0.9, 0.9, 0.9]):
+def make_graph(prms=[50, 1, 4, 1.2, 0.25, 0.9, 0.9, 0.9]):
     Q_plasma = prms[0]
 
     heating_power = prms[1]
@@ -138,15 +138,14 @@ graph1 = dcc.Graph(
     )
 
 Q_layout = html.Div([
-    html.Div("Q_plasma"), dcc.Input(id='Q box', type='text', value="50"),
-    html.Div("Heating power (MW)"), dcc.Input(id='heating box', type='text', value="1"),
-    html.Div("E_neutrons/E_alphas"), dcc.Input(id='neutr to alpha ratio', type='text', value="14.1/3.5"),
-    html.Div("Energy multiplication factor"), dcc.Input(id='neutron mult box', type='text', value="1.2"),
-    html.Div("Electricity generation efficiency"), dcc.Input(id='generator efficiency box', type='text', value="0.25"),
-    html.Div("Alphas FW/div ratio"), dcc.Input(id='alphas FW/div ratio', type='text', value="0.9"),
-    html.Div("Neutrons blanket/div ratio"), dcc.Input(id='neutrons BB/div ratio', type='text', value="0.9"),
-    html.Div("Heating efficiency"), dcc.Input(id='heating efficiency', type='text', value="0.9"),
-    # html.Button('Submit', id='submit-val'),
+    html.Div("Q_plasma"), dcc.Input(id='Q box', type='number', value=50, min=0),
+    html.Div("Heating power (MW)"), dcc.Input(id='heating box', type='number', value=1, min=0),
+    html.Div("E_neutrons/E_alphas"), dcc.Input(id='neutr to alpha ratio', type='number', value=4, min=0),
+    html.Div("Energy multiplication factor"), dcc.Input(id='neutron mult box', type='number', value=1.2, min=1),
+    html.Div("Electricity generation efficiency"), dcc.Input(id='generator efficiency box', type='number', value=0.25, min=0, max=1, step=0.01),
+    html.Div("Alphas FW/div ratio"), dcc.Input(id='alphas FW/div ratio', type='number', value=0.9, min=0, max=1, step=0.1),
+    html.Div("Neutrons blanket/div ratio"), dcc.Input(id='neutrons BB/div ratio', type='number', value=0.9, min=0, max=1, step=0.1),
+    html.Div("Heating efficiency"), dcc.Input(id='heating efficiency', type='number', value=0.9, min=0, max=1, step=0.1),
     ]
 )
 
@@ -170,7 +169,7 @@ def update_graph(Q, heating, neutr_to_alpha, neutron_mult, elec_gen_efficiency, 
     prms = [
         float(Q),
         float(heating),
-        eval(neutr_to_alpha),
+        float(neutr_to_alpha),
         float(neutron_mult),
         float(elec_gen_efficiency),
         float(alpha_FW_to_div),
