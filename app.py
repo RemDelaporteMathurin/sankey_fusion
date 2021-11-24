@@ -151,8 +151,15 @@ Q_layout = html.Div([
     ]
 )
 
+github_button = html.Iframe(
+        src="https://ghbtns.com/github-btn.html?user=remdelaportemathurin&repo=fusion-sankey&type=star&count=true&size=large",
+        width="170",
+        height="30",
+        title="GitHub",
+        style={"border": 0, "scrolling": "0"},
+    )
 
-layout = html.Div(children=[graph1, Q_layout])
+layout = html.Div(children=[github_button, graph1, Q_layout])
 app.layout = layout
 
 
