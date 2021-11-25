@@ -44,7 +44,7 @@ pumping_losses = Node("Pumping")
 magnets = Node("Magnets")
 
 
-def make_graph(prms=[50, 1, 4, 1.2, 0.25, 0.9, 0.9, 0.9]):
+def make_graph(prms=[50, 1, 4, 1.2, 0.25, 0.9, 0.9, 0.9, 0.1, 0.1]):
     Q_plasma = prms[0]
 
     heating_power = prms[1]
@@ -73,8 +73,8 @@ def make_graph(prms=[50, 1, 4, 1.2, 0.25, 0.9, 0.9, 0.9]):
     electricity_val = thermal_energy*elec_gen_efficiency
 
     elec_gen_losses_value = thermal_energy*(1-elec_gen_efficiency)
-    elec_to_pumping_value = 0.1*electricity_val
-    elec_to_magnets_value = 0.05*electricity_val
+    elec_to_magnets_value = prms[8]*electricity_val
+    elec_to_pumping_value = prms[9]*electricity_val
     heating_power_gross = heating_power/heating_efficiency
 
     net_electricity = electricity_val - heating_power_gross - elec_to_pumping_value - elec_to_magnets_value
@@ -143,16 +143,18 @@ Q_layout = html.Div([
     html.Div("Q_plasma"), dcc.Input(id='Q box', type='number', value=50, min=0),
     html.Div("Heating power (MW)"), dcc.Input(id='heating box', type='number', value=1, min=0),
     html.Div("E_neutrons/E_alphas"), dcc.Input(id='neutr to alpha ratio', type='number', value=4, min=0),
-    html.Div("Energy multiplication factor"), dcc.Input(id='neutron mult box', type='number', value=1.2, min=1),
+    html.Div("Energy multiplication factor"), dcc.Input(id='neutron mult box', type='number', value=1.2, min=1, step=0.01),
     html.Div("Electricity generation efficiency"), dcc.Input(id='generator efficiency box', type='number', value=0.25, min=0, max=1, step=0.01),
     html.Div("Alphas FW/div ratio"), dcc.Input(id='alphas FW/div ratio', type='number', value=0.9, min=0, max=1, step=0.1),
     html.Div("Neutrons blanket/div ratio"), dcc.Input(id='neutrons BB/div ratio', type='number', value=0.9, min=0, max=1, step=0.1),
     html.Div("Heating efficiency"), dcc.Input(id='heating efficiency', type='number', value=0.9, min=0.1, max=1, step=0.1),
+    html.Div("P_magnets/P_elec"), dcc.Input(id='elec to magnets ratio', type='number', value=0.1, min=0, max=1, step=0.1),
+    html.Div("P_pumps/P_elec"), dcc.Input(id='elec to pumps ratio', type='number', value=0.1, min=0, max=1, step=0.1),
     ]
 )
 
 github_button = html.Iframe(
-        src="https://ghbtns.com/github-btn.html?user=remdelaportemathurin&repo=fusion-sankey&type=star&count=true&size=large",
+        src="https://ghbtns.com/github-btn.html?user=remdelaportemathurin&repo=sankey_fusion&type=star&count=true&size=large",
         width="170",
         height="30",
         title="GitHub",
@@ -173,8 +175,10 @@ app.layout = layout
     dash.Input('alphas FW/div ratio', 'value'),
     dash.Input('neutrons BB/div ratio', 'value'),
     dash.Input('heating efficiency', 'value'),
+    dash.Input('elec to magnets ratio', 'value'),
+    dash.Input('elec to pumps ratio', 'value'),
 )
-def update_graph(Q, heating, neutr_to_alpha, neutron_mult, elec_gen_efficiency, alpha_FW_to_div, neut_BB_to_div, heating_eff):
+def update_graph(Q, heating, neutr_to_alpha, neutron_mult, elec_gen_efficiency, alpha_FW_to_div, neut_BB_to_div, heating_eff, elec_to_magnets, elec_to_pumps):
     prms = [
         float(Q),
         float(heating),
@@ -184,6 +188,8 @@ def update_graph(Q, heating, neutr_to_alpha, neutron_mult, elec_gen_efficiency, 
         float(alpha_FW_to_div),
         float(neut_BB_to_div),
         float(heating_eff),
+        float(elec_to_magnets),
+        float(elec_to_pumps),
     ]
     return make_graph(prms)
 
