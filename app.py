@@ -42,6 +42,7 @@ output = Node("Net Electricity")
 elec_gen_losses = Node("Losses")
 pumping_losses = Node("Pumping")
 magnets = Node("Magnets")
+input_elec = Node("Input Electricity")
 
 
 default_prms = {
@@ -57,6 +58,7 @@ default_prms = {
     "elec_to_magnets": 0.1
 
 }
+
 
 def make_graph(prms=default_prms):
     Q_plasma = prms["Q_plasma"]
@@ -93,6 +95,11 @@ def make_graph(prms=default_prms):
 
     net_electricity = electricity_val - heating_power_gross - elec_to_pumping_value - elec_to_magnets_value
 
+    heating_power_gross_from_reactor = heating_power_gross
+    # add an additional source of electricity if the generated electricity is not enough
+    if net_electricity < 0:
+        heating_power_gross_from_reactor += net_electricity
+
     for i, node in enumerate(nodes):
         node.color = DEFAULT_PLOTLY_COLORS[i%len(DEFAULT_PLOTLY_COLORS)].replace(")", ", 0.8)").replace("rgb", "rgba")
 
@@ -120,7 +127,8 @@ def make_graph(prms=default_prms):
         Link(electricity, pumping_losses, elec_to_pumping_value),
         Link(electricity, magnets, elec_to_magnets_value),
         Link(electricity, output, net_electricity),
-        Link(electricity, heating_system, heating_power_gross)
+        Link(electricity, heating_system, heating_power_gross_from_reactor),
+        Link(input_elec, heating_system, -net_electricity)
     ]
 
     sankey = go.Sankey(
@@ -164,6 +172,15 @@ Q_layout = html.Div([
     html.Div("Heating efficiency"), dcc.Input(id='heating efficiency', type='number', value=0.9, min=0.1, max=1, step=0.1),
     html.Div("P_magnets/P_elec"), dcc.Input(id='elec to magnets ratio', type='number', value=0.1, min=0, max=1, step=0.1),
     html.Div("P_pumps/P_elec"), dcc.Input(id='elec to pumps ratio', type='number', value=0.1, min=0, max=1, step=0.1),
+    dcc.Dropdown(
+        id='preset',
+        options=[
+            {'label': 'Default', 'value': 'default'},
+            {'label': 'Simple', 'value': 'simple'},
+        ],
+        value='Default',
+        placeholder="Select a reactor preset",
+    ),
     ]
 )
 
@@ -219,6 +236,39 @@ def update_graph(Q, heating, neutr_to_alpha, neutron_mult, elec_gen_efficiency, 
 
     }
     return make_graph(prms)
+
+@app.callback(
+    dash.Output('Q box', 'value'),
+    dash.Output('heating box', 'value'),
+    dash.Output('neutr to alpha ratio', 'value'),
+    dash.Output('neutron mult box', 'value'),
+    dash.Output('generator efficiency box', 'value'),
+    dash.Output('alphas FW/div ratio', 'value'),
+    dash.Output('neutrons BB/div ratio', 'value'),
+    dash.Output('heating efficiency', 'value'),
+    dash.Output('elec to magnets ratio', 'value'),
+    dash.Output('elec to pumps ratio', 'value'),
+    dash.Input("preset", "value"),
+    prevent_initial_call=True,
+)
+def add_preset(preset):
+    if preset == "default":
+        prms = default_prms
+    elif preset == "simple":
+        prms = {
+            "Q_plasma": 50,
+            "heating_power": 1,
+            "neutrons_to_alpha": 4,
+            "neutron_multiplication_factor": 1,
+            "elec_generation_efficiency": 0.25,
+            "alpha_in_fw_ratio": 0.9,
+            "neutrons_in_bb_ratio": 0.9,
+            "heating_efficiency": 1,
+            "elec_to_pumps": 0,
+            "elec_to_magnets": 0
+        }
+    values = [val for val in prms.values()]
+    return values
 
 
 if __name__ == "__main__":
