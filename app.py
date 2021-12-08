@@ -42,25 +42,41 @@ output = Node("Net Electricity")
 elec_gen_losses = Node("Losses")
 pumping_losses = Node("Pumping")
 magnets = Node("Magnets")
+input_elec = Node("Input Electricity")
 
 
-def make_graph(prms=[50, 1, 4, 1.2, 0.25, 0.9, 0.9, 0.9, 0.1, 0.1]):
-    Q_plasma = prms[0]
+default_prms = {
+    "Q_plasma": 50,
+    "heating_power": 1,
+    "neutrons_to_alpha": 4,
+    "neutron_multiplication_factor": 1.3,
+    "elec_generation_efficiency": 0.25,
+    "alpha_in_fw_ratio": 0.9,
+    "neutrons_in_bb_ratio": 0.9,
+    "heating_efficiency": 0.3,
+    "elec_to_pumps": 0.1,
+    "elec_to_magnets": 0.1
 
-    heating_power = prms[1]
-    heating_efficiency = prms[7]
+}
+
+
+def make_graph(prms=default_prms):
+    Q_plasma = prms["Q_plasma"]
+
+    heating_power = prms["heating_power"]
+    heating_efficiency = prms["heating_efficiency"]
     fusion_power_value = heating_power*float(Q_plasma)
-    neutrons_to_alpha_ratio = prms[2]
+    neutrons_to_alpha_ratio = prms["neutrons_to_alpha"]
     neutrons_power_from_plasma = 1/(1 + 1/neutrons_to_alpha_ratio)*(fusion_power_value+ heating_power)
     alphas_power = 1/(1 + neutrons_to_alpha_ratio)*(fusion_power_value + heating_power)
 
-    neutron_multiplication_factor = prms[3]
+    neutron_multiplication_factor = prms["neutron_multiplication_factor"]
     neutrons_power = neutrons_power_from_plasma
 
-    neutrons_in_blanket_ratio = prms[6]
+    neutrons_in_blanket_ratio = prms["neutrons_in_bb_ratio"]
     neutrons_in_div_ratio = 1 - neutrons_in_blanket_ratio
 
-    alpha_in_fw_ratio = prms[5]
+    alpha_in_fw_ratio = prms["alpha_in_fw_ratio"]
     alpha_in_div_ratio = 1 - alpha_in_fw_ratio
 
     fw_to_blanket_efficiency = 1
@@ -69,15 +85,20 @@ def make_graph(prms=[50, 1, 4, 1.2, 0.25, 0.9, 0.9, 0.9, 0.1, 0.1]):
     divertor_power = alphas_power*alpha_in_div_ratio + neutrons_power*neutrons_in_div_ratio
 
     thermal_energy = blanket_power + divertor_power
-    elec_gen_efficiency = prms[4]
+    elec_gen_efficiency = prms["elec_generation_efficiency"]
     electricity_val = thermal_energy*elec_gen_efficiency
 
     elec_gen_losses_value = thermal_energy*(1-elec_gen_efficiency)
-    elec_to_magnets_value = prms[8]*electricity_val
-    elec_to_pumping_value = prms[9]*electricity_val
+    elec_to_magnets_value = prms["elec_to_magnets"]*electricity_val
+    elec_to_pumping_value = prms["elec_to_pumps"]*electricity_val
     heating_power_gross = heating_power/heating_efficiency
 
     net_electricity = electricity_val - heating_power_gross - elec_to_pumping_value - elec_to_magnets_value
+
+    heating_power_gross_from_reactor = heating_power_gross
+    # add an additional source of electricity if the generated electricity is not enough
+    if net_electricity < 0:
+        heating_power_gross_from_reactor += net_electricity
 
     for i, node in enumerate(nodes):
         node.color = DEFAULT_PLOTLY_COLORS[i%len(DEFAULT_PLOTLY_COLORS)].replace(")", ", 0.8)").replace("rgb", "rgba")
@@ -106,7 +127,8 @@ def make_graph(prms=[50, 1, 4, 1.2, 0.25, 0.9, 0.9, 0.9, 0.1, 0.1]):
         Link(electricity, pumping_losses, elec_to_pumping_value),
         Link(electricity, magnets, elec_to_magnets_value),
         Link(electricity, output, net_electricity),
-        Link(electricity, heating_system, heating_power_gross)
+        Link(electricity, heating_system, heating_power_gross_from_reactor),
+        Link(input_elec, heating_system, -net_electricity)
     ]
 
     sankey = go.Sankey(
@@ -143,13 +165,22 @@ Q_layout = html.Div([
     html.Div("Q_plasma"), dcc.Input(id='Q box', type='number', value=50, min=0),
     html.Div("Heating power (MW)"), dcc.Input(id='heating box', type='number', value=1, min=0),
     html.Div("E_neutrons/E_alphas"), dcc.Input(id='neutr to alpha ratio', type='number', value=4, min=0),
-    html.Div("Energy multiplication factor"), dcc.Input(id='neutron mult box', type='number', value=1.2, min=1, step=0.01),
+    html.Div("Energy multiplication factor"), dcc.Input(id='neutron mult box', type='number', value=1.2, min=1),
     html.Div("Electricity generation efficiency"), dcc.Input(id='generator efficiency box', type='number', value=0.25, min=0, max=1, step=0.01),
     html.Div("Alphas FW/div ratio"), dcc.Input(id='alphas FW/div ratio', type='number', value=0.9, min=0, max=1, step=0.1),
     html.Div("Neutrons blanket/div ratio"), dcc.Input(id='neutrons BB/div ratio', type='number', value=0.9, min=0, max=1, step=0.1),
     html.Div("Heating efficiency"), dcc.Input(id='heating efficiency', type='number', value=0.9, min=0.1, max=1, step=0.1),
     html.Div("P_magnets/P_elec"), dcc.Input(id='elec to magnets ratio', type='number', value=0.1, min=0, max=1, step=0.1),
     html.Div("P_pumps/P_elec"), dcc.Input(id='elec to pumps ratio', type='number', value=0.1, min=0, max=1, step=0.1),
+    dcc.Dropdown(
+        id='preset',
+        options=[
+            {'label': 'Default', 'value': 'default'},
+            {'label': 'Simple', 'value': 'simple'},
+        ],
+        value='Default',
+        placeholder="Select a reactor preset",
+    ),
     ]
 )
 
@@ -191,7 +222,53 @@ def update_graph(Q, heating, neutr_to_alpha, neutron_mult, elec_gen_efficiency, 
         float(elec_to_magnets),
         float(elec_to_pumps),
     ]
+    prms = {
+        "Q_plasma": float(Q),
+        "heating_power": float(heating),
+        "neutrons_to_alpha": float(neutr_to_alpha),
+        "neutron_multiplication_factor": float(neutron_mult),
+        "elec_generation_efficiency": float(elec_gen_efficiency),
+        "alpha_in_fw_ratio": float(alpha_FW_to_div),
+        "neutrons_in_bb_ratio": float(neut_BB_to_div),
+        "heating_efficiency": float(heating_eff),
+        "elec_to_pumps": float(elec_to_pumps),
+        "elec_to_magnets": float(elec_to_magnets)
+
+    }
     return make_graph(prms)
+
+@app.callback(
+    dash.Output('Q box', 'value'),
+    dash.Output('heating box', 'value'),
+    dash.Output('neutr to alpha ratio', 'value'),
+    dash.Output('neutron mult box', 'value'),
+    dash.Output('generator efficiency box', 'value'),
+    dash.Output('alphas FW/div ratio', 'value'),
+    dash.Output('neutrons BB/div ratio', 'value'),
+    dash.Output('heating efficiency', 'value'),
+    dash.Output('elec to magnets ratio', 'value'),
+    dash.Output('elec to pumps ratio', 'value'),
+    dash.Input("preset", "value"),
+    prevent_initial_call=True,
+)
+def add_preset(preset):
+    if preset == "default":
+        prms = default_prms
+    elif preset == "simple":
+        prms = {
+            "Q_plasma": 50,
+            "heating_power": 1,
+            "neutrons_to_alpha": 4,
+            "neutron_multiplication_factor": 1,
+            "elec_generation_efficiency": 0.25,
+            "alpha_in_fw_ratio": 0.9,
+            "neutrons_in_bb_ratio": 0.9,
+            "heating_efficiency": 1,
+            "elec_to_pumps": 0,
+            "elec_to_magnets": 0
+        }
+    values = [val for val in prms.values()]
+    return values
 
 
 if __name__ == "__main__":
