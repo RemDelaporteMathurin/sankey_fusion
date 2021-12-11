@@ -54,8 +54,8 @@ default_prms = {
     "alpha_in_fw_ratio": 0.9,
     "neutrons_in_bb_ratio": 0.9,
     "heating_efficiency": 0.9,
-    "elec_to_pumps": 0.1,
-    "elec_to_magnets": 0.1
+    "elec_to_magnets": 0.1,
+    "elec_to_pumps": 0.1
 
 }
 
@@ -177,6 +177,7 @@ Q_layout = html.Div([
         options=[
             {'label': 'Default', 'value': 'default'},
             {'label': 'Simple', 'value': 'simple'},
+            {'label': 'ARC', 'value': 'arc'},
         ],
         value='Default',
         placeholder="Select a reactor preset",
@@ -219,8 +220,8 @@ def update_graph(Q, heating, neutr_to_alpha, neutron_mult, elec_gen_efficiency, 
         float(alpha_FW_to_div),
         float(neut_BB_to_div),
         float(heating_eff),
-        float(elec_to_magnets),
         float(elec_to_pumps),
+        float(elec_to_magnets),
     ]
     prms = {
         "Q_plasma": float(Q),
@@ -231,9 +232,8 @@ def update_graph(Q, heating, neutr_to_alpha, neutron_mult, elec_gen_efficiency, 
         "alpha_in_fw_ratio": float(alpha_FW_to_div),
         "neutrons_in_bb_ratio": float(neut_BB_to_div),
         "heating_efficiency": float(heating_eff),
-        "elec_to_pumps": float(elec_to_pumps),
-        "elec_to_magnets": float(elec_to_magnets)
-
+        "elec_to_magnets": float(elec_to_magnets),
+        "elec_to_pumps": float(elec_to_pumps)
     }
     return make_graph(prms)
 
@@ -264,8 +264,21 @@ def add_preset(preset):
             "alpha_in_fw_ratio": 0.9,
             "neutrons_in_bb_ratio": 0.9,
             "heating_efficiency": 1,
-            "elec_to_pumps": 0,
-            "elec_to_magnets": 0
+            "elec_to_magnets": 0,
+            "elec_to_pumps": 0
+        }
+    elif preset == "arc":
+        prms = {
+            "Q_plasma": 13.6,
+            "heating_power": 25+13.6,
+            "neutrons_to_alpha": 4,
+            "neutron_multiplication_factor": 1.35,
+            "elec_generation_efficiency": 0.4,
+            "alpha_in_fw_ratio": 0.9,
+            "neutrons_in_bb_ratio": 0.9,
+            "heating_efficiency": 1,
+            "elec_to_magnets": 0.2,
+            "elec_to_pumps": 0
         }
     values = [val for val in prms.values()]
     return values
