@@ -53,7 +53,7 @@ default_prms = {
     "elec_generation_efficiency": 0.25,
     "alpha_in_fw_ratio": 0.9,
     "neutrons_in_bb_ratio": 0.9,
-    "heating_efficiency": 0.3,
+    "heating_efficiency": 0.9,
     "elec_to_pumps": 0.1,
     "elec_to_magnets": 0.1
 
